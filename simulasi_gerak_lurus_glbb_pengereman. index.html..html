@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulasi Interaktif Gerak Lurus — Kelas XI</title>
+<style>
+:root{--ink:#17243a;--muted:#64748b;--line:#dce5ef;--panel:#fff;--bg:#f2f6fb;--blue:#2563eb;--cyan:#06b6d4;--orange:#f59e0b;--green:#16a34a;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:25px clamp(16px,4vw,48px);background:linear-gradient(120deg,#10284b,#1d4e89 60%,#0e7490);color:white}
+header h1{margin:0 0 5px;font-size:clamp(23px,3vw,34px);letter-spacing:-.5px}header p{margin:0;color:#d9e8fa}
+main{max-width:1250px;margin:auto;padding:22px clamp(12px,3vw,30px) 40px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{border:1px solid var(--line);background:#fff;color:#334155;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer}
+.tab.active{background:#1d4ed8;color:white;border-color:#1d4ed8;box-shadow:0 5px 14px #1d4ed833}
+.layout{display:grid;grid-template-columns:minmax(280px,350px) minmax(0,1fr);gap:16px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 25px #1e3a5f0a}
+.panel h2,.panel h3{margin:0 0 12px}.panel h2{font-size:18px}.panel h3{font-size:15px}
+.control{margin:15px 0}.control label{display:flex;justify-content:space-between;gap:10px;font-weight:650;margin-bottom:6px}.control output{color:var(--blue);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--blue)}input[type=number]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;font:inherit}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+button.action{border:0;border-radius:10px;padding:10px 14px;font-weight:750;cursor:pointer;background:#e7eef8;color:#183153}
+button.primary{background:var(--blue);color:white}button:disabled{opacity:.45;cursor:not-allowed}
+.speedbox{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--muted)}select{padding:7px;border:1px solid var(--line);border-radius:8px;background:white;color:var(--ink)}
+.sceneWrap{padding:0;overflow:hidden}
+.sceneTop{padding:15px 18px 0;display:flex;justify-content:space-between;gap:12px;align-items:center}.sceneTop strong{font-size:16px}.status{font-size:12px;font-weight:800;padding:5px 9px;border-radius:99px;background:#eaf2ff;color:#1d4ed8}
+.scene{height:270px;position:relative;overflow:hidden;background:linear-gradient(#b9e3f7 0%,#e9f7ff 68%,#c8e8c3 68%,#a8d59e 100%)}
+.scene.vertical-scene{background:linear-gradient(to bottom,#8fd0f2 0%,#dff5ff 76%,#dff5ff 76%,#c9e8b8 100%)}
+.vertical-scene .hill,.vertical-scene .road{display:none}
+.vertical-ground{display:none;position:absolute;left:0;right:0;bottom:0;height:30px;background:linear-gradient(#8fc47d,#65a85f);border-top:3px solid #4d8d4b;z-index:1}
+.vertical-scene .vertical-ground{display:block}
+.vertical-axis{display:none;position:absolute;left:50%;top:28px;bottom:30px;width:2px;background:#ffffffb8;transform:translateX(-50%);z-index:2}
+.vertical-scene .vertical-axis{display:block}
+.vertical-tick{display:none;position:absolute;left:calc(50% + 17px);font-size:11px;color:#24445a;background:#ffffffc9;padding:2px 5px;border-radius:5px;transform:translateY(50%);z-index:3}
+.vertical-scene .vertical-tick{display:block}
+.sun{position:absolute;right:9%;top:28px;width:48px;height:48px;border-radius:50%;background:#ffd66b;box-shadow:0 0 0 10px #ffe9a544}
+.cloud{position:absolute;width:100px;height:28px;border-radius:30px;background:#ffffffcc;top:52px;left:12%;filter:drop-shadow(0 3px 2px #7ca9bb33)}.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border-radius:50%}.cloud:before{width:38px;height:38px;left:18px;top:-18px}.cloud:after{width:48px;height:48px;right:15px;top:-23px}
+.hill{position:absolute;bottom:83px;width:230px;height:90px;background:#83bd88;border-radius:50% 50% 0 0;opacity:.75}.hill.one{left:-60px}.hill.two{right:-65px;background:#6eae83}
+.road{position:absolute;bottom:0;left:0;right:0;height:92px;background:#37465b;border-top:5px solid #e8eef4}
+.road:after{content:"";position:absolute;left:0;right:0;top:43px;border-top:4px dashed #f8d66d}
+.roadLabels{position:absolute;left:0;right:0;bottom:8px;height:18px;color:#fff;font-size:11px;display:flex;justify-content:space-around;opacity:.9}
+.car{position:absolute;bottom:53px;left:8%;width:92px;height:45px;transform:translateX(-50%);z-index:4;will-change:left}
+.car svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 5px 3px #17243a44)}
+.car.reverse svg{transform:scaleX(-1)}
+.directionArrow{position:absolute;bottom:105px;left:8%;transform:translateX(-50%);font-size:20px;font-weight:900;color:#123b80;text-shadow:0 1px 2px white;z-index:5;white-space:nowrap}
+.positionTag{position:absolute;bottom:103px;left:8%;transform:translateX(-50%);background:#10284b;color:white;padding:4px 8px;border-radius:7px;font-size:11px;font-weight:750;white-space:nowrap;z-index:5}
+.markerLine{position:absolute;left:8%;right:8%;bottom:95px;height:1px;background:#ffffff99}
+.sceneReadout{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px 16px;background:#f8fbff;border-top:1px solid var(--line)}
+.readout{padding:7px 10px;background:white;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--muted)}
+.readout b{display:block;color:var(--ink);font-size:15px;font-variant-numeric:tabular-nums}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:14px}
+.metric{background:#f8fbff;border:1px solid var(--line);padding:11px;border-radius:12px;min-width:0}.metric span{display:block;font-size:12px;color:var(--muted)}.metric b{font-size:18px;font-variant-numeric:tabular-nums}
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.chart{width:100%;height:220px;display:block;background:#fbfdff;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 7px;text-align:right;border-bottom:1px solid #e8eef5;font-variant-numeric:tabular-nums}th{background:#f5f8fc;color:#475569}th:first-child,td:first-child{text-align:left}
+.tableWrap{max-height:235px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.explain{font-size:13px;color:#475569;background:#f8fbff;border-left:3px solid var(--cyan);padding:10px 12px;border-radius:7px;margin-top:12px}
+.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f5f9;padding:8px 10px;border-radius:8px;display:inline-block;margin:3px 4px 3px 0;font-size:13px}
+.footer{font-size:12px;color:var(--muted);margin-top:18px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.lower{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.scene{height:240px}}
+</style>
+</head>
+<body>
+<header><h1>Simulasi Interaktif Gerak Lurus</h1><p>Fisika Kelas XI · GLB, GLBB, GVA, GVB, dan Gerak Jatuh Bebas</p></header>
+<main>
+<div class="tabs" id="tabs">
+<button class="tab active" data-mode="glb">GLB</button><button class="tab" data-mode="glbb">GLBB</button><button class="tab" data-mode="gva">GVA</button><button class="tab" data-mode="gvb">GVB</button><button class="tab" data-mode="gjb">GJB</button>
+</div>
+<div class="layout">
+<section class="panel">
+<h2 id="controlTitle">Pengaturan GLB</h2>
+<div id="controls"></div>
+<div class="actions"><button class="action primary" id="play">▶ Mulai</button><button class="action" id="pause">Ⅱ Jeda</button><button class="action" id="reset">↺ Ulangi</button></div>
+<div class="speedbox">Kecepatan pemutaran
+<select id="playRate"><option value="1">1× (waktu nyata)</option><option value=".5">0,5× (lebih lambat)</option><option value=".25">0,25× (sangat lambat)</option><option value="2">2× (lebih cepat)</option></select>
+</div>
+<div class="hint">Waktu simulasi mengikuti pilihan pemutaran. Pada 1×, 1 sekon simulasi = 1 sekon waktu nyata.</div>
+<div id="formulaArea" class="explain"></div>
+</section>
+<section>
+<div class="panel sceneWrap">
+<div class="sceneTop"><strong id="sceneTitle">Lintasan mobil — Gerak Lurus Beraturan</strong><span class="status" id="status">Siap</span></div>
+<div class="scene" id="scene">
+<div class="sun"></div><div class="cloud"></div><div class="hill one"></div><div class="hill two"></div>
+<div class="markerLine"></div>
+<div class="positionTag" id="positionTag">x = 0,0 m</div><div class="directionArrow" id="directionArrow">→</div>
+<div class="car" id="car"><svg viewBox="0 0 120 58" aria-label="Ilustrasi mobil"><path d="M12 36 L18 22 Q20 18 28 17 L42 8 Q47 4 57 4 L83 5 Q91 6 96 17 L107 23 Q113 26 114 34 L112 43 L8 43 L8 38Z" fill="#2563eb" stroke="#123b80" stroke-width="2"/><path d="M45 10 L57 8 L79 9 Q85 10 89 19 L38 19Z" fill="#bfe8ff" stroke="#d9f5ff" stroke-width="1.5"/><path d="M12 31 L108 31" stroke="#93c5fd" stroke-width="2"/><rect x="5" y="34" width="110" height="9" rx="3" fill="#1e40af"/><circle cx="31" cy="44" r="9" fill="#17243a"/><circle cx="31" cy="44" r="4" fill="#dbeafe"/><circle cx="91" cy="44" r="9" fill="#17243a"/><circle cx="91" cy="44" r="4" fill="#dbeafe"/><rect x="105" y="27" width="7" height="5" rx="2" fill="#fde68a"/></svg></div>
+<div class="road"><div class="roadLabels" id="roadLabels"><span>0 m</span><span>20 m</span><span>40 m</span><span>60 m</span><span>80 m</span></div></div>
+<div class="vertical-ground"></div><div class="vertical-axis"></div>
+<div class="vertical-tick" id="tick0" style="bottom:30px">0 m</div><div class="vertical-tick" id="tick1" style="bottom:117px">—</div><div class="vertical-tick" id="tick2" style="bottom:204px">—</div>
+</div>
+<div class="sceneReadout"><div class="readout">Waktu simulasi<b id="timeRead">0,00 s</b></div><div class="readout">Posisi<b id="posRead">0,00 m</b></div><div class="readout">Arah gerak<b id="dirRead">Diam</b></div><div class="readout">Kondisi<b id="conditionRead">Menunggu</b></div></div>
+</div>
+<div class="metrics">
+<div class="metric"><span>Posisi / ketinggian</span><b id="mX">0,00 m</b></div><div class="metric"><span>Kecepatan</span><b id="mV">0,00 m/s</b></div><div class="metric"><span>Percepatan</span><b id="mA">0,00 m/s²</b></div><div class="metric"><span>Waktu</span><b id="mT">0,00 s</b></div>
+</div>
+<div class="lower">
+<div class="panel"><h3 id="chart1Title">Grafik posisi–waktu</h3><canvas class="chart" id="chart1"></canvas></div>
+<div class="panel"><h3 id="chart2Title">Grafik kecepatan–waktu</h3><canvas class="chart" id="chart2"></canvas></div>
+</div>
+<div class="panel" style="margin-top:14px"><h3>Tabel data simulasi</h3><div class="tableWrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div><div class="footer">Data tabel diambil dari keadaan simulasi yang sama dengan animasi dan grafik. Baris terakhir disesuaikan dengan waktu akhir atau saat benda mencapai tanah/titik tertinggi.</div></div>
+</section>
+</div>
+<div class="footer">Catatan: Simulasi merupakan model ideal. Untuk gerak vertikal, hambatan udara diabaikan dan percepatan gravitasi dianggap konstan sebesar 9,8 m/s² (dapat diubah).</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const G=9.8;
+const configs={
+ glb:{title:"Gerak Lurus Beraturan (GLB)",params:[{id:"v",label:"Kecepatan (v)",min:-10,max:20,step:.5,value:5,unit:"m/s"},{id:"duration",label:"Durasi simulasi",min:2,max:20,step:1,value:12,unit:"s"}]},
+ glbb:{title:"Gerak Lurus Berubah Beraturan (GLBB)",params:[{id:"v0",label:"Kecepatan awal (v₀)",min:-10,max:15,step:.5,value:4,unit:"m/s"},{id:"a",label:"Percepatan (a)",min:-3,max:3,step:.1,value:.8,unit:"m/s²"},{id:"duration",label:"Durasi simulasi",min:2,max:15,step:1,value:10,unit:"s"}]},
+ gva:{title:"Gerak Vertikal ke Atas (GVA)",params:[{id:"u",label:"Kecepatan awal ke atas (v₀)",min:2,max:30,step:.5,value:19.6,unit:"m/s"},{id:"g",label:"Percepatan gravitasi (g)",min:1,max:15,step:.1,value:9.8,unit:"m/s²"}]},
+ gvb:{title:"Gerak Vertikal ke Bawah (GVB)",params:[{id:"h0",label:"Ketinggian awal (h₀)",min:5,max:100,step:1,value:50,unit:"m"},{id:"u",label:"Kecepatan awal ke bawah (v₀)",min:0,max:20,step:.5,value:5,unit:"m/s"},{id:"g",label:"Percepatan gravitasi (g)",min:1,max:15,step:.1,value:9.8,unit:"m/s²"}]},
+ gjb:{title:"Gerak Jatuh Bebas (GJB)",params:[{id:"h0",label:"Ketinggian awal (h₀)",min:5,max:100,step:1,value:50,unit:"m"},{id:"g",label:"Percepatan gravitasi (g)",min:1,max:15,step:.1,value:9.8,unit:"m/s²"}]}
+};
+let mode="glb",p={},t=0,running=false,last=0,raf=0,history=[],endTime=12,playRate=1,worldMin=0,worldMax=100,groundEnd=false,glbbStopTime=null;
+const fmt=(n,d=2)=>Number(n).toLocaleString("id-ID",{minimumFractionDigits:d,maximumFractionDigits:d});
+function readParams(){for(const c of configs[mode].params)p[c.id]=Number($(c.id).value)}
+function buildControls(){
+ $("controlTitle").textContent="Pengaturan "+mode.toUpperCase();
+ $("controls").innerHTML=configs[mode].params.map(c=>`<div class="control"><label for="${c.id}"><span>${c.label}</span><output id="${c.id}Out">${fmt(c.value,c.step<1?1:0)} ${c.unit}</output></label><input type="range" id="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}"></div>`).join("");
+ configs[mode].params.forEach(c=>$(c.id).addEventListener("input",()=>{ $(c.id+"Out").textContent=fmt(Number($(c.id).value),c.step<1?1:0)+" "+c.unit;resetSim();}));
+ readParams();computeEnd();setFormula();setTableHead();setChartTitles();resetSim();
+}
+function computeEnd(){
+ if(mode==="glb"){endTime=p.duration;glbbStopTime=null;return}
+ if(mode==="glbb"){
+  glbbStopTime=null;
+  // Model pengereman: v0 positif dan a negatif membuat mobil berhenti,
+  // bukan berbalik arah setelah kecepatannya mencapai nol.
+  if(p.v0>0&&p.a<0){
+   glbbStopTime=-p.v0/p.a;
+   endTime=Math.min(p.duration,glbbStopTime);
+  }else{
+   endTime=p.duration;
+  }
+  return;
+ }
+ const g=p.g;
+ if(mode==="gva")endTime=2*p.u/g;
+ else if(mode==="gvb"){const disc=p.u*p.u+2*g*p.h0;endTime=(-p.u+Math.sqrt(disc))/g}
+ else endTime=Math.sqrt(2*p.h0/g);
+}
+function setFormula(){
+ let s="";
+ if(mode==="glb")s='<b>Persamaan:</b><br><span class="formula">x = x₀ + vt</span><span class="formula">v = konstan</span><br>Kecepatan tetap; percepatan nol.';
+ if(mode==="glbb"){
+  const braking=p.v0>0&&p.a<0;
+  s='<b>Persamaan:</b><br><span class="formula">x = x₀ + v₀t + ½at²</span><span class="formula">v = v₀ + at</span><br>'+
+    (braking
+      ? 'Pengereman: mobil bergerak ke kanan semakin lambat, lalu berhenti total saat kecepatan mencapai nol. Setelah berhenti, kecepatan dan percepatan menjadi nol.'
+      : 'Percepatan konstan. Jika kecepatan awal nol atau negatif dan percepatan negatif, mobil dapat bergerak ke kiri.');
+ }
+ if(mode==="gva")s=`<b>Persamaan:</b><br><span class="formula">h = v₀t − ½gt²</span><span class="formula">v = v₀ − gt</span><br>Waktu ke titik tertinggi: <b>${fmt(p.u/p.g)} s</b>. Waktu total kembali ke ketinggian awal: <b>${fmt(endTime)} s</b>.`;
+ if(mode==="gvb")s='<b>Persamaan:</b><br><span class="formula">h = h₀ − v₀t − ½gt²</span><span class="formula">v = v₀ + gt</span><br>Waktu menyentuh tanah diperoleh dari akar positif persamaan h(t) = 0.';
+ if(mode==="gjb")s='<b>Persamaan:</b><br><span class="formula">h = h₀ − ½gt²</span><span class="formula">v = gt</span><br>Benda dilepas dari keadaan diam. Simulasi berhenti tepat saat h = 0.';
+ $("formulaArea").innerHTML=s;
+}
+function setTableHead(){
+ const vertical=mode==="gva"||mode==="gvb"||mode==="gjb";
+ $("tableHead").innerHTML=`<tr><th>t (s)</th><th>${vertical?"h (m)":"x (m)"}</th><th>v (m/s)</th><th>a (m/s²)</th></tr>`;
+}
+function setChartTitles(){const vertical=mode==="gva"||mode==="gvb"||mode==="gjb";$("chart1Title").textContent=vertical?"Grafik ketinggian–waktu":"Grafik posisi–waktu";$("chart2Title").textContent="Grafik kecepatan–waktu";}
+function stateAt(time){
+ const tt=Math.max(0,Math.min(endTime,time));
+ if(mode==="glb")return {x:p.v*tt,v:p.v,a:0,t:tt};
+ if(mode==="glbb"){
+  if(glbbStopTime!==null&&time>=glbbStopTime){
+   const stopX=p.v0*glbbStopTime+.5*p.a*glbbStopTime*glbbStopTime;
+   return {x:stopX,v:0,a:0,t:Math.min(tt,glbbStopTime)};
+  }
+  return {x:p.v0*tt+.5*p.a*tt*tt,v:p.v0+p.a*tt,a:p.a,t:tt};
+ }
+ if(mode==="gva")return {x:Math.max(0,p.u*tt-.5*p.g*tt*tt),v:tt>=endTime? -p.u : p.u-p.g*tt,a:-p.g,t:tt};
+ if(mode==="gvb")return {x:Math.max(0,p.h0-p.u*tt-.5*p.g*tt*tt),v:p.u+p.g*tt,a:tt>=endTime?0:p.g,t:tt};
+ return {x:Math.max(0,p.h0-.5*p.g*tt*tt),v:p.g*tt,a:tt>=endTime?0:p.g,t:tt};
+}
+function getWorld(){
+ if(mode==="glb"||mode==="glbb"){
+  const xs=[0,stateAt(endTime).x];if(mode==="glbb"&&glbbStopTime===null&&Math.abs(p.a)>1e-9){const turn=-p.v0/p.a;if(turn>0&&turn<endTime)xs.push(stateAt(turn).x)}
+  worldMin=Math.min(...xs);worldMax=Math.max(...xs);if(worldMax-worldMin<1){worldMin-=.5;worldMax+=.5}
+ }else{worldMin=0;worldMax=mode==="gva"?Math.max(1,p.u*p.u/(2*p.g)):p.h0}
+}
+function resetSim(){if(!configs[mode])return;readParams();computeEnd();getWorld();t=0;running=false;history=[];const s=stateAt(0);history.push(s);render(s);$("status").textContent="Siap";$("play").disabled=false;drawAll()}
+function render(s){
+ const vertical=mode==="gva"||mode==="gvb"||mode==="gjb";
+ $("timeRead").textContent=fmt(s.t)+" s";$("posRead").textContent=fmt(s.x)+" "+(vertical?"m":"m");
+ $("mX").textContent=fmt(s.x)+" m";$("mV").textContent=fmt(s.v)+" m/s";$("mA").textContent=fmt(s.a)+" m/s²";$("mT").textContent=fmt(s.t)+" s";
+ $("dirRead").textContent=Math.abs(s.v)<.015?"Diam":vertical?(s.v>0?"Ke bawah":"Ke atas"):(s.v>0?"Ke kanan":"Ke kiri");
+ $("conditionRead").textContent=t>=endTime-1e-6?"Akhir gerak":Math.abs(s.v)<.015?"Sesaat berhenti":"Bergerak";
+ if(vertical){
+  $("scene").classList.add("vertical-scene");
+  $("sceneTitle").textContent=mode==="gva"?"Lintasan bola — Gerak Vertikal ke Atas":mode==="gvb"?"Lintasan bola — Gerak Vertikal ke Bawah":"Lintasan bola — Gerak Jatuh Bebas";
+  const height=mode==="gva"?Math.max(1,p.u*p.u/(2*p.g)):p.h0;
+  const frac=Math.max(0,Math.min(1,s.x/height));
+  $("car").style.display="none";$("positionTag").style.display="none";$("directionArrow").style.display="none";
+  let ball=$("ball");if(!ball){ball=document.createElement("div");ball.id="ball";ball.style.cssText="position:absolute;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff,#f97316 35%,#9a3412);box-shadow:0 5px 9px #17243a55;left:50%;transform:translateX(-50%);z-index:5";$("scene").appendChild(ball)}
+  ball.style.display="block";
+  // Tinggi animasi diukur dari permukaan tanah, bukan dari batas bawah jalan.
+  ball.style.bottom=(30+frac*174)+"px";
+  $("roadLabels").style.display="none";
+  $("tick0").textContent="0 m";$("tick1").textContent=fmt(height/2,1)+" m";$("tick2").textContent=fmt(height,1)+" m";
+ }else{
+  $("scene").classList.remove("vertical-scene");
+  $("car").style.display="block";$("positionTag").style.display="block";$("directionArrow").style.display="block";
+  $("roadLabels").style.display="flex";
+  const ball=$("ball");if(ball)ball.style.display="none";
+  const range=worldMax-worldMin||1,frac=(s.x-worldMin)/range;
+  const left=8+Math.max(0,Math.min(1,frac))*84;
+  $("car").style.left=left+"%";$("positionTag").style.left=left+"%";$("directionArrow").style.left=left+"%";
+  $("positionTag").textContent="x = "+fmt(s.x,1)+" m";
+  // v < 0 berarti perpindahan ke kiri pada sumbu x positif ke kanan.
+  $("car").classList.toggle("reverse",s.v<-.015);
+  $("directionArrow").textContent=Math.abs(s.v)<.015?"•":(s.v>0?"→":"←");
+  const labels=[];for(let i=0;i<5;i++)labels.push("<span>"+fmt(worldMin+range*i/4,1)+" m</span>");$("roadLabels").innerHTML=labels.join("");
+ }
+}
+function tick(stamp){if(!running)return;const dt=Math.min((stamp-last)/1000,.05);last=stamp;t=Math.min(endTime,t+dt*playRate);const s=stateAt(t);if(!history.length||t-history[history.length-1].t>=.2||t>=endTime)history.push(s);render(s);drawAll();if(t>=endTime){running=false;$("status").textContent="Selesai";$("play").disabled=true;return}raf=requestAnimationFrame(tick)}
+function play(){if(running||t>=endTime)return;running=true;last=performance.now();$("status").textContent="Berjalan";$("play").disabled=false;raf=requestAnimationFrame(tick)}
+function pause(){running=false;cancelAnimationFrame(raf);$("status").textContent="Dijeda"}
+function makeSeries(){const arr=history.slice();const cur=stateAt(t);if(!arr.length||Math.abs(arr[arr.length-1].t-cur.t)>.001)arr.push(cur);return arr}
+function drawChart(canvasId,key,title){
+ const c=$(canvasId),ctx=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,dpr=window.devicePixelRatio||1;c.width=w*dpr;c.height=h*dpr;ctx.scale(dpr,dpr);
+ const pad={l:48,r:15,t:18,b:34},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;ctx.clearRect(0,0,w,h);
+ const series=makeSeries(),vertical=mode==="gva"||mode==="gvb"||mode==="gjb";
+ const end=Math.max(endTime,.1),xVals=series.map(s=>s.t),yVals=series.map(s=>s[key]);let ymin=Math.min(0,...yVals),ymax=Math.max(0,...yVals);if(ymax-ymin<1){ymin-=.5;ymax+=.5}const margin=(ymax-ymin)*.12;ymin-=margin;ymax+=margin;
+ const X=x=>pad.l+x/end*pw,Y=y=>pad.t+(ymax-y)/(ymax-ymin)*ph;
+ ctx.strokeStyle="#e4ebf3";ctx.lineWidth=1;ctx.fillStyle="#64748b";ctx.font="11px system-ui";ctx.textAlign="right";
+ for(let i=0;i<=4;i++){const y=pad.t+i*ph/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();const val=ymax-i*(ymax-ymin)/4;ctx.fillText(fmt(val,1),pad.l-7,y+4)}
+ ctx.textAlign="center";for(let i=0;i<=4;i++){const x=pad.l+i*pw/4;ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,h-pad.b);ctx.stroke();ctx.fillText(fmt(end*i/4,1),x,h-12)}
+ const zeroY=Y(0);if(zeroY>=pad.t&&zeroY<=h-pad.b){ctx.strokeStyle="#94a3b8";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(pad.l,zeroY);ctx.lineTo(w-pad.r,zeroY);ctx.stroke()}
+ if(series.length>1){ctx.strokeStyle=key==="x"?"#2563eb":"#ea580c";ctx.lineWidth=2.7;ctx.lineJoin="round";ctx.beginPath();series.forEach((s,i)=>{const xx=X(s.t),yy=Y(s[key]);if(i===0)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy)});ctx.stroke();const lastS=series[series.length-1];ctx.fillStyle=key==="x"?"#2563eb":"#ea580c";ctx.beginPath();ctx.arc(X(lastS.t),Y(lastS[key]),4,0,Math.PI*2);ctx.fill()}
+ ctx.fillStyle="#475569";ctx.textAlign="center";ctx.fillText("Waktu (s)",pad.l+pw/2,h-1);
+}
+function drawAll(){drawChart("chart1","x");drawChart("chart2","v");updateTable()}
+function updateTable(){
+ const arr=makeSeries();const rows=arr.filter((s,i)=>i===0||i===arr.length-1||i%Math.max(1,Math.ceil(arr.length/8))===0);
+ $("tableBody").innerHTML=rows.map(s=>`<tr><td>${fmt(s.t)}</td><td>${fmt(s.x)}</td><td>${fmt(s.v)}</td><td>${fmt(s.a)}</td></tr>`).join("");
+}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-mode]");if(!b)return;mode=b.dataset.mode;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));buildControls()});
+$("play").addEventListener("click",play);$("pause").addEventListener("click",pause);$("reset").addEventListener("click",resetSim);$("playRate").addEventListener("change",e=>playRate=Number(e.target.value));
+window.addEventListener("resize",drawAll);
+buildControls();
+</script>
+</body>
+</html>
